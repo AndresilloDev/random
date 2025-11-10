@@ -1,20 +1,10 @@
-// app/dashboard/page.tsx
+// frontend/app/dashboard/page.tsx
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function DashboardPage() {
-  const { user, loading, isAuthenticated, logout } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Redirigir al login si no está autenticado
-    if (!loading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [loading, isAuthenticated, router]);
+  const { user, loading, logout } = useAuth();
 
   if (loading) {
     return (
@@ -28,7 +18,7 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null; // Redirigiendo...
+    return null; // El middleware redirigirá
   }
 
   return (
@@ -105,7 +95,7 @@ export default function DashboardPage() {
               <div>
                 <p className="text-sm font-medium text-green-800">Autenticación exitosa</p>
                 <p className="text-sm text-green-700 mt-1">
-                  Tu cuenta ha sido autenticada correctamente y está registrada en la base de datos.
+                  Tu sesión está protegida con JWT y middleware personalizado.
                 </p>
               </div>
             </div>
@@ -114,12 +104,13 @@ export default function DashboardPage() {
 
         {/* Additional Content */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Adicional</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Sistema</h3>
           <div className="space-y-2 text-sm text-gray-600">
-            <p>• Tu sesión está protegida con JWT</p>
-            <p>• El token se guarda de forma segura en cookies httpOnly</p>
-            <p>• Tu información está sincronizada con el backend</p>
-            <p>• Puedes cerrar sesión en cualquier momento</p>
+            <p>✅ Sin NextAuth - Sistema personalizado</p>
+            <p>✅ Middleware personalizado para protección de rutas</p>
+            <p>✅ JWT almacenado en cookies httpOnly</p>
+            <p>✅ Integración con backend Express</p>
+            <p>✅ Soporte para Google OAuth</p>
           </div>
         </div>
       </main>

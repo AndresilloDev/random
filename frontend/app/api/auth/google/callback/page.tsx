@@ -1,3 +1,4 @@
+// frontend/app/api/auth/google/callback/page.tsx
 "use client";
 
 import { useEffect, Suspense } from "react";
@@ -8,51 +9,61 @@ function GoogleCallbackLogic() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
-    // --- INICIO DE DEBUG ---
-    console.log("Página de callback de Google cargada.");
+    console.log("[Google Callback] Iniciando procesamiento...");
     
-    // 1. Obtener el token de la URL
     const token = searchParams.get("token");
+    const error = searchParams.get("error");
     
-    if (token) {
-      console.log("Token encontrado:", token);
-      
-      // 2. Guardar el token en localStorage
-      localStorage.setItem("authToken", token);
-      console.log("Token guardado en localStorage.");
-      
-      // 3. Redirigir al dashboard
-      console.log("Redirigiendo a /dashboard...");
-      router.push("/dashboard"); // <-- Asegúrate que esta ruta exista
-
-    } else {
-      // 4. Si no hay token, redirigir al login
-      console.error("ERROR: No se encontró ningún 'token' en la URL.");
-      console.log("Parámetros de URL actuales:", searchParams.toString());
-      
-      // Comprobar si hay un parámetro de error
-      const error = searchParams.get("error");
-      if(error) {
-        console.error("Se recibió un error:", error);
-      }
-
-      console.log("Redirigiendo a /login...");
-      router.push("/login");
+    // Si hay error, redirigir a login con el error
+    if (error) {
+      console.error("[Google Callback] Error recibido:", error);
+      router.push(`/login?error=${error}`);
+      return;
     }
-    // --- FIN DE DEBUG ---
+    
+    // Si hay token, guardarlo y redirigir
+    if (token) {
+      console.log("[Google Callback] Token recibido, guardando...");
+      
+      // Guardar en cookie (IMPORTANTE: es la que usa el middleware)
+      document.cookie = `auth-token=${token}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
+      
+      console.log("[Google Callback] Cookie guardada, redirigiendo a /dashboard");
+      
+      // Pequeño delay para asegurar que la cookie se guardó
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 100);
+      
+    } else {
+      // No hay token ni error
+      console.error("[Google Callback] No se recibió token ni error");
+      router.push("/login?error=no_token");
+    }
   }, [router, searchParams]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p>Procesando inicio de sesión...</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-6" />
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Procesando inicio de sesión
+        </h2>
+        <p className="text-gray-600">
+          Autenticando con Google...
+        </p>
+      </div>
     </div>
   );
 }
 
-// Usamos <Suspense> porque useSearchParams() lo requiere
 export default function GoogleCallbackPage() {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600" />
+      </div>
+    }>
       <GoogleCallbackLogic />
     </Suspense>
   );

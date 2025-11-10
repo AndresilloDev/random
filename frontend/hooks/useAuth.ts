@@ -1,5 +1,4 @@
-// hooks/useAuth.ts
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -26,7 +25,6 @@ export function useAuth() {
 
   const checkAuth = () => {
     try {
-      // Obtener token de las cookies del navegador
       const token = document.cookie
         .split('; ')
         .find(row => row.startsWith('auth-token='))
@@ -38,18 +36,17 @@ export function useAuth() {
         return;
       }
 
-      // Decodificar el token
       const decoded = jwtDecode<User>(token);
       
-      // Verificar si el token ha expirado
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-        // Token expirado
+        console.log('[useAuth] Token expirado');
         document.cookie = 'auth-token=; Max-Age=0; path=/;';
         setUser(null);
         setLoading(false);
         return;
       }
 
+      console.log('[useAuth] Usuario autenticado:', decoded);
       setUser(decoded);
       setLoading(false);
     } catch (error) {
@@ -67,12 +64,14 @@ export function useAuth() {
 
       // Limpiar el token
       document.cookie = 'auth-token=; Max-Age=0; path=/;';
+      localStorage.removeItem('authToken');
+      
       setUser(null);
       router.push('/login');
     } catch (error) {
       console.error('[useAuth] Error al cerrar sesión:', error);
-      // Limpiar localmente aunque falle la petición
       document.cookie = 'auth-token=; Max-Age=0; path=/;';
+      localStorage.removeItem('authToken');
       setUser(null);
       router.push('/login');
     }

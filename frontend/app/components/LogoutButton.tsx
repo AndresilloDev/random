@@ -1,17 +1,13 @@
-// components/LogoutButton.tsx
-'use client';
+"use client";
 
-import { signOut } from 'next-auth/react';
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LogoutButton() {
-  const handleLogout = () => {
-    // Aquí le dices "después de cerrar sesión, envíame a /"
-    signOut({ callbackUrl: '/login' }); 
-  };
+  const { logout } = useAuth();
 
   return (
-    <button onClick={handleLogout}>
-      Cerrar Sesión
+    <button onClick={logout}>
+      Cerrar sesión
     </button>
   );
 }

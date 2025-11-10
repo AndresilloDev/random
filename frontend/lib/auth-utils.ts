@@ -1,4 +1,3 @@
-// lib/auth-utils.ts
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 
@@ -16,16 +15,12 @@ const secret = new TextEncoder().encode(
   process.env.JWT_SECRET || 'fallback-secret'
 );
 
-/**
- * Verifica y decodifica un token JWT
- */
 async function verifyToken(token: string): Promise<UserSession | null> {
   if (!token) return null;
   
   try {
     const { payload } = await jwtVerify(token, secret);
 
-    // Validate payload shape at runtime and convert to UserSession
     if (typeof payload !== 'object' || payload === null) return null;
 
     const anyPayload = payload as any;
@@ -50,9 +45,6 @@ async function verifyToken(token: string): Promise<UserSession | null> {
   }
 }
 
-/**
- * Obtiene la sesión del usuario actual desde las cookies (Server Side)
- */
 export async function getSession(): Promise<UserSession | null> {
   try {
     const cookieStore = await cookies();
@@ -70,9 +62,6 @@ export async function getSession(): Promise<UserSession | null> {
   }
 }
 
-/**
- * Obtiene el token de autenticación de las cookies (Server Side)
- */
 export async function getAuthToken(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
@@ -83,9 +72,6 @@ export async function getAuthToken(): Promise<string | null> {
   }
 }
 
-/**
- * Elimina la sesión del usuario (Server Side)
- */
 export async function clearSession(): Promise<void> {
   try {
     const cookieStore = await cookies();

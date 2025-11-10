@@ -1,5 +1,9 @@
-import AuthProvider from './components/AuthProvider'; // Ajusta la ruta
 import './globals.css';
+
+export const metadata = {
+  title: 'Assist & Share',
+  description: 'Sistema de gestión de eventos',
+};
 
 export default function RootLayout({
   children,
@@ -7,12 +11,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body>
-        <AuthProvider>
-          {/* Header */}
-          {children}
-        </AuthProvider>
+        {children}
       </body>
     </html>
   );

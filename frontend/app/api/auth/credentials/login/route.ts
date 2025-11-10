@@ -1,4 +1,4 @@
-// app/api/auth/credentials/login/route.ts
+// frontend/app/api/auth/credentials/login/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Guardar el token en una cookie
+    // Guardar el token en una cookie httpOnly
     const cookieStore = await cookies();
     cookieStore.set('auth-token', data.value.token, {
       httpOnly: true,
@@ -50,12 +50,14 @@ export async function POST(request: Request) {
       path: '/',
     });
 
+    console.log('[Credentials Login] Login exitoso, cookie configurada');
+
     // Devolver los datos del usuario
     return NextResponse.json({
       success: true,
       message: 'Inicio de sesión exitoso',
       user: data.value.user,
-      token: data.value.token,
+      token: data.value.token, // Para que el cliente también pueda acceder
     });
   } catch (error) {
     console.error('[Credentials Login] Error:', error);

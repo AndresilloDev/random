@@ -30,15 +30,7 @@ export const AuthController = {
     },
 
     register: async (req, res) => {
-        const { email, password, first_name, last_name, role, speciality } = req.body;
-
-        const user_role = req.session?.user?.role;
-        if (role !== "attendee" && user_role !== "admin") {
-            return ApiResponse.error(res, {
-                message: "No tienes permiso para asignar este rol",
-                status: 403,
-            });
-        }
+        const { email, password, first_name, last_name, speciality } = req.body;
 
         try {
             const data = await AuthService.register({
@@ -46,13 +38,16 @@ export const AuthController = {
                 password,
                 first_name,
                 last_name,
-                role,
+                role: "attendee",
                 speciality,
             });
 
             return ApiResponse.success(res, {
                 message: "Usuario registrado correctamente",
-                value: { user: data, token },
+                value: {
+                    user: data.user,
+                    token: data.token,
+                },
                 status: 201,
             });
         } catch (error) {
@@ -105,11 +100,9 @@ export const AuthController = {
 
     googleCallback: (req, res) => {
         const user = req.user;
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: "30d" }
-        );
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET,{ 
+            expiresIn: "30d",
+        });
 
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:6767';
         res.redirect(`${frontendUrl}/api/auth/google/callback?token=${token}`);
