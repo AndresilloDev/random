@@ -5,7 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../../hooks/useAuth";
 import api from "../../../lib/api";
 import { AxiosError } from "axios";
-import { Eye, EyeOff, Loader } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  no_token: "No se recibió el token",
+  callback_failed: "Error al autenticar con Google",
+  session_expired: "Los datos son inválidos",
+  authentication_failed: "Falló la autenticación",
+};
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -16,7 +23,7 @@ function LoginForm() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, checkAuth } = useAuth();
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) router.push("/dashboard");
@@ -24,16 +31,9 @@ function LoginForm() {
 
   useEffect(() => {
     const urlError = searchParams.get("error");
-    if (!urlError) return;
-
-    const map: Record<string, string> = {
-      no_token: "No se recibió el token",
-      callback_failed: "Error al autenticar con Google",
-      session_expired: "Sesión expirada",
-      authentication_failed: "Falló la autenticación",
-    };
-
-    setError(map[urlError] || "Error de autenticación");
+    if (urlError) {
+      setError(ERROR_MESSAGES[urlError] || "Error de autenticación");
+    }
   }, [searchParams]);
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
@@ -42,28 +42,32 @@ function LoginForm() {
     setError("");
 
     try {
-      await api.post("/auth/login", { email, password });
-      router.push("/dashboard");
-    } catch (err) {
-      let msg = "Error al iniciar sesión.";
+      const { data } = await api.post("/auth/login", { email, password });
 
-      if (err instanceof AxiosError) {
-        msg = err.response?.data?.message || "Error del servidor";
-      } else if ((err as any).request) {
-        msg = "No hay conexión";
-      } else if ((err as any).message) {
-        msg = (err as any).message;
+      if (!data.success || !data.value?.token) {
+        throw new Error("No se recibió el token de autenticación");
       }
 
-      setError(msg);
+      document.cookie = `auth-token=${data.value.token}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
+      
+      await checkAuth();
+      
+      setTimeout(() => router.push("/dashboard"), 100);
+    } catch (err) {
+      const message = err instanceof AxiosError 
+        ? err.response?.data?.message || "Error del servidor"
+        : err instanceof Error 
+        ? err.message 
+        : "Error al iniciar sesión";
+      
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
-    window.location.href = `${backendUrl}/auth/google`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   return (
@@ -74,6 +78,12 @@ function LoginForm() {
       <div className="w-full max-w-lg bg-white/5 rounded-3xl p-8 border border-white/10 shadow-2xl">
         <h1 className="text-3xl text-white">Iniciar Sesión</h1>
         <p className="text-gray-400 text-base mb-6">Accede a tu espacio personal</p>
+
+        {error && (
+          <div className="bg-red-900/50 border border-red-700 p-4 rounded-2xl mb-6 text-red-200 text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleCredentialsLogin} className="space-y-4">
           <div>
@@ -108,7 +118,7 @@ function LoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-11 text-gray-300 hover:text-white p-1"
+              className="absolute right-3 top-11 text-gray-300 hover:text-white p-1 cursor-pointer"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
@@ -123,28 +133,23 @@ function LoginForm() {
 
           <button
             type="submit"
+            disabled={loading}
             aria-busy={loading}
-            className="w-full py-3 bg-black/80 text-white rounded-2xl border border-white/10 flex items-center justify-center gap-2 cursor-pointer hover:bg-black/40 hover:rounded-3xl duration-300"
-            >
+            className="w-full py-3 bg-black/80 text-white rounded-2xl border border-white/10 flex items-center justify-center gap-3 cursor-pointer hover:bg-black/40 hover:rounded-3xl duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             {loading ? (
               <>
-              <span
-                className="inline-block w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                aria-hidden="true"
-              />
-              <span>Iniciar sesión</span>
+                <span
+                  className="inline-block w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                  aria-hidden="true"
+                />
+                <span>Iniciando sesión...</span>
               </>
             ) : (
               "Iniciar sesión"
             )}
-            </button>
+          </button>
         </form>
-
-        {error && (
-          <div className="bg-red-900/50 border border-red-700 p-4 rounded-2xl mb-6 text-red-200 text-sm">
-            {error}
-          </div>
-        )}
 
         {/* Divider */}
         <div className="flex items-center my-6">
@@ -168,12 +173,11 @@ function LoginForm() {
         </button>
 
         <p className="text-right text-sm text-gray-400 mb-4">
-          ¿No tienes cuenta? {""}
+          ¿No tienes cuenta?{" "}
           <a href="/signup" className="underline">
             Regístrate
           </a>
         </p>
-
       </div>
     </div>
   );

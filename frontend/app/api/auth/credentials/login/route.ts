@@ -1,4 +1,3 @@
-// frontend/app/api/auth/credentials/login/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
@@ -14,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     // Llamar al backend para autenticar
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
     const response = await fetch(`${backendUrl}/auth/login`, {
       method: 'POST',
       headers: {

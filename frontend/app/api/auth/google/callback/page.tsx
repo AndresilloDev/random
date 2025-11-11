@@ -1,4 +1,3 @@
-// frontend/app/api/auth/google/callback/page.tsx
 "use client";
 
 import { useEffect, Suspense } from "react";
@@ -25,7 +24,7 @@ function GoogleCallbackLogic() {
     if (token) {
       console.log("[Google Callback] Token recibido, guardando...");
       
-      // Guardar en cookie (IMPORTANTE: es la que usa el middleware)
+      // Guardar en cookie (Es la que usa el proxy / middleware)
       document.cookie = `auth-token=${token}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
       
       console.log("[Google Callback] Cookie guardada, redirigiendo a /dashboard");

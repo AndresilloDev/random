@@ -20,6 +20,7 @@ export default function DashboardPage() {
   if (!user) {
     return null; // El middleware redirigirá
   }
+  console.log('Usuario autenticado en Dashboard:', user);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -29,7 +30,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user.email}</p>
+              <p className="text-sm font-medium text-black">{user.email}</p>
               <p className="text-xs text-gray-500 capitalize">{user.role}</p>
             </div>
             <button
@@ -59,7 +60,8 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-1">Tu Perfil</h3>
               <p className="text-sm text-gray-600">Usuario ID: {user.id}</p>
-              <p className="text-sm text-gray-600 capitalize">Rol: {user.role}</p>
+              <p className="text-sm font-medium text-black capitalize">Rol: {user.role}</p>
+              <p className="text-sm font-medium text-black">{user.email}</p>
             </div>
 
             {/* Card 2 - Estado */}

@@ -47,14 +47,19 @@ function RegisterForm() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
+    window.location.href = `${backendUrl}/auth/google`;
+  };
+
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center"
       style={{ background: "linear-gradient(180deg, #1B293A 0%, #131517 75%)" }}
     >
       <div className="w-full max-w-lg bg-white/5 rounded-3xl p-8 border border-white/10 shadow-2xl">
-        <h1 className="text-3xl text-white">Crear Cuenta</h1>
-        <p className="text-gray-400 text-base mb-6">Regístrate para acceder a tu espacio</p>
+        <h1 className="text-3xl text-white">Registrarse</h1>
+        <p className="text-gray-400 text-base mb-6">Inicia hoy creando una nueva cuenta</p>
 
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
@@ -142,6 +147,27 @@ function RegisterForm() {
             )}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-6">
+          <div className="flex-1 h-px bg-white/10"></div>
+          <span className="px-4 text-gray-400 text-sm">o</span>
+          <div className="flex-1 h-px bg-white/10"></div>
+        </div>
+
+        {/* Google Button */}
+        <button
+          onClick={handleGoogleLogin}
+          type="button"
+          className="w-full py-3 bg-white text-gray-800 rounded-2xl flex items-center justify-center gap-3 mb-4 hover:bg-gray-200 hover:rounded-3xl duration-300 cursor-pointer"
+        >
+          <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          Continuar con Google
+        </button>
 
         {error && (
           <div className="bg-red-900/50 border border-red-700 p-4 rounded-2xl mb-6 text-red-200 text-sm">
